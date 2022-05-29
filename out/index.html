@@ -20,14 +20,14 @@
                     <th>Case ID</th>
                     <th>WKT A</th>
                     <th>WKT B</th>
-                    <th>Real polygon count</th>
-                    <th>Real area</th>
-                    <th>Epeck polygon count</th>
-                    <th>Epeck area</th>
-                    <th>BG polygon count</th>
-                    <th>BG area</th>
-                    <th>Area error (relative to Real)</th>
-                    <th>Arrea error (relative to Epeck)</th>
+                    <th>CGAL Real polygon count</th>
+                    <th>CGAL Real area</th>
+                    <th>CGAL Epeck polygon count</th>
+                    <th>CGAL Epeck area</th>
+                    <th>BG double polygon count</th>
+                    <th>BG double area</th>
+                    <th>(BG Real &Delta; CGAL Real area) / (CGAL Real area)</th>
+                    <th>(BG double &Delta; CGAL Epeck area) / (CGAL Epeck area)</th>
                     <th>Status</th>
                 </tr>
             </thead>
@@ -36,8 +36,17 @@
         </table>
         <script type="text/javascript">
             function svg_row(d) {
+                var operator_symbol;
+                if (d.id.endsWith("sym_difference"))
+                    operator_symbol = "&Delta;";
+                else if (d.id.endsWith("_difference"))
+                    operator_symbol = "-";
+                else if (d.id.endsWith("_union"))
+                    operator_symbol = "&cup;";
+                else if (d.id.endsWith("_intersection"))
+                    operator_symbol = " &cap;";
                 return      '<table>' +
-                                '<thead><th>A (red) & B (green)</th><th>A - B (Real CGAL)</th><th>A - B (EPECK CGAL)</th><th>A - B (BG double)</th><th>A - B (BG Real)</th></thead>' +
+                                '<thead><th>A (red) & B (green)</th><th>A '+operator_symbol+' B (Real CGAL)</th><th>A '+operator_symbol+' B (EPECK CGAL)</th><th>A '+operator_symbol+' B (BG double)</th><th>A '+operator_symbol+' B (BG Real)</th></thead>' +
                             '<tr>' +
                                 '<td><img src="'+d.id+'_problem_double.svg" style="width:300px; height:300px;" /></td>' +
                                 '<td><img src="'+d.id+'_real_res_alt.svg" style="width:300px; height:300px; transform: scaleY(-1)" /></td>' +
