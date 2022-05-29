@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Difference Multi</title>
+        <link rel="stylesheet" href="//cdn.datatables.net/1.12.1/css/jquery.dataTables.min.css">
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+        <script
+            src="https://code.jquery.com/jquery-3.6.0.min.js"
+            integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4="
+            crossorigin="anonymous"></script>
+
+        <script type="text/javascript" src="//cdn.datatables.net/1.12.1/js/jquery.dataTables.min.js"></script>
+    </head>
+        
+    </body>
+        <table id="result-table">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th>Case ID</th>
+                    <th>WKT A</th>
+                    <th>WKT B</th>
+                    <th>Real polygon count</th>
+                    <th>Real area</th>
+                    <th>Epeck polygon count</th>
+                    <th>Epeck area</th>
+                    <th>BG polygon count</th>
+                    <th>BG area</th>
+                    <th>Area error (relative to Real)</th>
+                    <th>Arrea error (relative to Epeck)</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+        <script type="text/javascript">
+            function svg_row(d) {
+                return      '<table>' +
+                                '<thead><th>A (red) & B (green)</th><th>A - B (Real CGAL)</th><th>A - B (EPECK CGAL)</th><th>A - B (BG double)</th><th>A - B (BG Real)</th></thead>' +
+                            '<tr>' +
+                                '<td><img src="'+d.id+'_problem_double.svg" style="width:300px; height:300px;" /></td>' +
+                                '<td><img src="'+d.id+'_real_res_alt.svg" style="width:300px; height:300px; transform: scaleY(-1)" /></td>' +
+                                '<td><img src="'+d.id+'_epeck_res_alt.svg" style="width:300px; height:300px; transform: scaleY(-1)" /></td>' +
+                                '<td><img src="'+d.id+'_bg_res.svg" style="width:300px; height:300px;" /></td>' +
+                                '<td><img src="'+d.id+'_bg_res_real.svg" style="width:300px; height:300px; transform: scaleY(-1)" /></td>' +
+                            '</tr></table>';
+            }
+            var table;
+
+            Papa.parse("/results.csv", {
+                download: true,
+                skipEmptyLines: true,
+                complete: function(results, file) {
+                    console.log("Parsing complete:", results, file);
+                    table = $('#result-table').DataTable({
+                        data: results.data,
+                        columns: [
+                            {
+                                className: 'dt-control',
+                                orderable: false,
+                                data: null,
+                                defaultContent: '',
+                            },
+                            { data: 'id' },
+                            { data: 'wkt_a' },
+                            { data: 'wkt_b' },
+                            { data: 'real_result_polygon_count' },
+                            { data: 'real_result_area' },
+                            { data: 'epeck_result_polygon_count' },
+                            { data: 'epeck_result_area' },
+                            {
+                                data: 'bg_polygon_count',
+                                render: function(data, type, row)
+                                        {
+                                            return  row.bg_polygon_count + 
+                                                    (row.bg_polygon_count == row.real_result_polygon_count?" (correct)":" (incorrect)");
+                                        }
+                            },
+                            { data: 'bg_area' },
+                            {
+                                data: 'real_error_area',
+                                render: function(data, type, row)
+                                        {
+                                            return row.real_error_area != 0 ? (row.real_result_area == -1 ? -1 : row.real_error_area / row.real_result_area) : 0;
+                                        }
+                            },
+                            {
+                                data: 'epeck_error_area',
+                                render: function(data, type, row)
+                                        {
+                                            return row.epeck_error_area != 0 ? (row.epeck_result_area == -1 ? -1 : row.epeck_error_area / row.epeck_result_area) : 0;
+                                        }
+                            },
+                            { data: 'status' }
+                        ]
+                    });
+
+                    $('#result-table tbody').on('click', 'td.dt-control', function () {
+                        var tr = $(this).closest('tr');
+                        var row = table.row(tr);
+                 
+                        if (row.child.isShown()) {
+                            // This row is already open - close it
+                            row.child.hide();
+                            tr.removeClass('shown');
+                        } else {
+                            // Open this row
+                            row.child(svg_row(row.data())).show();
+                            tr.addClass('shown');
+                        }
+                    });
+                },
+                header: true,
+                delimiter: ";"
+            });
+
+        </script>
+    </body>
+</html>
